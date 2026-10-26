@@ -10,14 +10,15 @@ EncoderJoint baseMotor(
     18, // encA
     31, // encB
     A15,  // limSw 
-    1,  // kp 
-    0,  // ki 
+    10,  // kp 
+    0.1,  // ki 
     0,  // kd 
     270,  // homedAngle 
-    360.0 / (2348 * (72.0/18.0)), // degreesPerTick (derived from: encoderResolution=2348, gearRatio=72.0/18.0)
+    360.0 / ((52*46.8) * (72.0/18.0)), // degreesPerTick (derived from: encoderResolution=2348, gearRatio=72.0/18.0)
     270,  // maxAngle 
-    0,   // minAngle 
-    true // reverseEncoder
+    135,   // minAngle 
+    true, // reverseEncoder
+    0 // backlashOffset
 );
 
 // Shoulder motor (Port 2)
@@ -27,15 +28,16 @@ EncoderJoint shoulderMotor(
     8,  // pwm
     19, // encA
     38, // encB
-    0,  // limSw (tbd)
-    1,  // kp 
+    A13,  // limSw
+    15,  // kp 
     0,  // ki 
-    0,  // kd 
+    1,  // kd 
     120,  // homedAngle 
-    360.0 / (1440 * (72.0/8.0)), // degreesPerTick (derived from: encoderResolution=1440, gearRatio=72.0/8.0)
+    360.0 / ((52*34) * (72.0/8.0)), // degreesPerTick (derived from: encoderResolution=1440, gearRatio=72.0/8.0)
     120, // maxAngle
     0,   // minAngle
-    false // reverseEncoder
+    false, // reverseEncoder
+    5 // backlashOffset
 );
 
 // Elbow motor (Port 3)
@@ -45,15 +47,16 @@ EncoderJoint elbowMotor(
     9,  // pwm
     3,  // encA
     49, // encB
-    0,  // limSw (tbd)
-    1,  // kp 
+    A14,  // limSw
+    15,  // kp 
     0,  // ki 
-    0,  // kd 
+    1,  // kd 
     180,  // homedAngle 
-    360.0 / (1440 * (72.0/8.0)), // degreesPerTick (derived from: encoderResolution=1440, gearRatio=72.0/8.0)
+    360.0 / ((52*34) * (72.0/8.0)), // degreesPerTick (derived from: encoderResolution=1440, gearRatio=72.0/8.0)
     180, // maxAngle
     75,  // minAngle
-    false // reverseEncoder
+    false, // reverseEncoder
+    15 // backlashOffset
 );
 
 unsigned long lastUpdate = 0;
@@ -78,9 +81,9 @@ void loop() {
     }
 
     if (millis() - lastPrint > SERIAL_SAMPLE_TIME) {
-        baseMotor.printDebugInfo("Base Motor");
-        shoulderMotor.printDebugInfo("Shoulder Motor");
-        elbowMotor.printDebugInfo("Elbow Motor");
+        //baseMotor.printDebugInfo("Base Motor");
+        //shoulderMotor.printDebugInfo("Shoulder Motor");
+        //elbowMotor.printDebugInfo("Elbow Motor");
         lastPrint = millis();
     }
 }

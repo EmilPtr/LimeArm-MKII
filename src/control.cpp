@@ -14,7 +14,8 @@ EncoderJoint::EncoderJoint(
     double degreesPerTick, 
     double maxAngle, 
     double minAngle,
-    boolean reverseEncoder): 
+    boolean reverseEncoder,
+    uint8_t backlashOffset):
 
     dir1(dir1),
     dir2(dir2),
@@ -29,7 +30,8 @@ EncoderJoint::EncoderJoint(
     maxAngle(maxAngle),
     minAngle(minAngle),
     homedAngle(homedAngle),
-    reverseEncoder(reverseEncoder)
+    reverseEncoder(reverseEncoder),
+    backlashOffset(backlashOffset)
 {
     // Initialize the PID controller automatically upon instantiation
     pid.SetMode(AUTOMATIC);
@@ -45,6 +47,7 @@ void EncoderJoint::init() {
 }
 
 void EncoderJoint::setSetpointDegrees(double angle) {
+    angle += backlashOffset; // Apply backlash offset to the desired angle
     if (angle > maxAngle) {
         setpoint = maxAngle;
     } else if (angle < minAngle) {

@@ -46,7 +46,7 @@ public:
     EncoderJoint(
         uint8_t dir1, uint8_t dir2, uint8_t pwm, uint8_t encA, uint8_t encB, uint8_t limSw,
         double kp, double ki, double kd, double homedAngle, double degreesPerTick, 
-        double maxAngle, double minAngle, boolean reverseEncoder);
+        double maxAngle, double minAngle, boolean reverseEncoder, uint8_t backlashOffset);
 
     void init();
     void setSetpointDegrees(double angle);
@@ -71,6 +71,7 @@ private:
     double minAngle;
     double homedAngle;
     boolean reverseEncoder;
+    uint8_t backlashOffset;
 };
 
 #endif
