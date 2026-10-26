@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include "control.h"
+#include "comm.h"
 
 // Base motor (Port 1)
 EncoderJoint baseMotor(
@@ -59,6 +60,9 @@ EncoderJoint elbowMotor(
 unsigned long lastUpdate = 0;
 unsigned long lastPrint = 0;
 
+SerialComm comm;
+JointAngles targetSetpoints;
+
 void setup() {
     Serial.begin(115200);
     baseMotor.init();
@@ -70,6 +74,15 @@ void setup() {
 }
 
 void loop() {
+    // 1. Process incoming setpoints as fast as possible
+    if (comm.processRX(targetSetpoints)) {
+        // Apply the new parsed setpoints directly to the motors
+        baseMotor.setSetpointDegrees(targetSetpoints.base);
+        shoulderMotor.setSetpointDegrees(targetSetpoints.shoulder);
+        elbowMotor.setSetpointDegrees(targetSetpoints.elbow);
+    }
+
+    // 2. Update PID controllers at a fixed interval
     if (millis() - lastUpdate > SAMPLE_TIME) {
         baseMotor.update();
         shoulderMotor.update();
@@ -77,10 +90,14 @@ void loop() {
         lastUpdate = millis();
     }
 
+    // 3. Send high-speed binary telemetry at a fixed interval
     if (millis() - lastPrint > SERIAL_SAMPLE_TIME) {
-        baseMotor.printDebugInfo("Base Motor");
-        shoulderMotor.printDebugInfo("Shoulder Motor");
-        elbowMotor.printDebugInfo("Elbow Motor");
+        // Fetch current angles and send them
+        comm.sendTX(
+            baseMotor.getCurrentAngle(),
+            shoulderMotor.getCurrentAngle(),
+            elbowMotor.getCurrentAngle()
+        );
         lastPrint = millis();
     }
 }
