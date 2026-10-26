@@ -11,10 +11,10 @@ EncoderJoint::EncoderJoint(
     double ki, 
     double kd, 
     double homedAngle, 
-    double encoderResolution, 
-    double gearRatio, 
+    double degreesPerTick, 
     double maxAngle, 
-    double minAngle):
+    double minAngle,
+    boolean reverseEncoder): 
 
     dir1(dir1),
     dir2(dir2),
@@ -25,15 +25,16 @@ EncoderJoint::EncoderJoint(
     input(0),
     output(0),
     setpoint(0),
-    encoderResolution(encoderResolution),
-    gearRatio(gearRatio),
+    degreesPerTick(degreesPerTick),
     maxAngle(maxAngle),
     minAngle(minAngle),
-    homedAngle(homedAngle)
+    homedAngle(homedAngle),
+    reverseEncoder(reverseEncoder)
 {
     // Initialize the PID controller automatically upon instantiation
     pid.SetMode(AUTOMATIC);
     pid.SetOutputLimits(MOTOR_MIN_SPEED, MOTOR_MAX_SPEED);
+    pid.SetSampleTime(SAMPLE_TIME);
 }
 
 void EncoderJoint::init() {
@@ -55,8 +56,10 @@ void EncoderJoint::setSetpointDegrees(double angle) {
 
 double EncoderJoint::getCurrentAngle() {
     long encoderValue = encoder.read();
-    // Convert raw ticks to degrees factoring in the encoder resolution and gearbox ratio
-    return (encoderValue / encoderResolution) * (360.0 / gearRatio);
+    if (reverseEncoder) {
+        encoderValue = -encoderValue;
+    }
+    return encoderValue * degreesPerTick;
 }
 
 void EncoderJoint::moveMotor(int speed) {
@@ -105,11 +108,14 @@ void EncoderJoint::home() {
     moveMotor(0);
 
     // Calculate the raw encoder ticks that correspond to the predetermined homed angle
-    // Formula derived from: angle = (ticks / encoderResolution) * (360.0 / gearRatio)
-    long homedTicks = (long)((homedAngle * encoderResolution * gearRatio) / 360.0);
+    long homedTicks = (long)(homedAngle / degreesPerTick);
 
     // Overwrite the encoder's internal counter to establish our absolute zero/homed reference
-    encoder.write(homedTicks);
+    if (reverseEncoder) {
+        encoder.write(-homedTicks);
+    } else {
+        encoder.write(homedTicks);
+    }
 
     // Update internal PID states to reflect the new homed position so the joint doesn't jump
     input = homedAngle;
