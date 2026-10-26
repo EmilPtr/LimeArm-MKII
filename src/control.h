@@ -34,6 +34,9 @@
 #define KI 0.0 // Integral gain
 #define KD 1.0 // Derivative gain
 
+#define SAMPLE_TIME 20 // PID sample time in milliseconds
+#define SERIAL_SAMPLE_TIME 100 // Serial print sample time in milliseconds
+
 /**
  * @class EncoderJoint
  * @brief Represents a single robotic joint controlled by a DC motor with an encoder and PID control.
@@ -42,15 +45,15 @@ class EncoderJoint {
 public:
     EncoderJoint(
         uint8_t dir1, uint8_t dir2, uint8_t pwm, uint8_t encA, uint8_t encB, uint8_t limSw,
-        double kp, double ki, double kd, double homedAngle, double encoderResolution, 
-        double gearRatio, double maxAngle, double minAngle);
+        double kp, double ki, double kd, double homedAngle, double degreesPerTick, 
+        double maxAngle, double minAngle, boolean reverseEncoder);
 
     void init();
     void setSetpointDegrees(double angle);
     double getCurrentAngle();
     void moveMotor(int speed);
     void update();
-    void printDebugInfo(const char* label = "Motor");
+    void printDebugInfo(const char* label);
     void home();
 
 private:
@@ -63,11 +66,11 @@ private:
     double input;
     double output;
     double setpoint;
-    double encoderResolution;
-    double gearRatio;
+    double degreesPerTick;
     double maxAngle;
     double minAngle;
     double homedAngle;
+    boolean reverseEncoder;
 };
 
 #endif
