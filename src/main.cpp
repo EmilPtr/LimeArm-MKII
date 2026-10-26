@@ -10,14 +10,14 @@ EncoderJoint baseMotor(
     18, // encA
     31, // encB
     A15,  // limSw 
-    0.75,  // kp 
-    0.075,  // ki 
+    1,  // kp 
+    0,  // ki 
     0,  // kd 
     270,  // homedAngle 
-    2348,  // encoderResolution
-    72.0/18.0,  // gearRatio 
+    360.0 / (2348 * (72.0/18.0)), // degreesPerTick (derived from: encoderResolution=2348, gearRatio=72.0/18.0)
     270,  // maxAngle 
-    0   // minAngle 
+    0,   // minAngle 
+    true // reverseEncoder
 );
 
 // Shoulder motor (Port 2)
@@ -32,10 +32,10 @@ EncoderJoint shoulderMotor(
     0,  // ki 
     0,  // kd 
     120,  // homedAngle 
-    1440,      // encoderResolution
-    8.0/72.0,  // gearRatio
+    360.0 / (1440 * (72.0/8.0)), // degreesPerTick (derived from: encoderResolution=1440, gearRatio=72.0/8.0)
     120, // maxAngle
-    0    // minAngle
+    0,   // minAngle
+    false // reverseEncoder
 );
 
 // Elbow motor (Port 3)
@@ -50,11 +50,14 @@ EncoderJoint elbowMotor(
     0,  // ki 
     0,  // kd 
     180,  // homedAngle 
-    1440,      // encoderResolution
-    8.0/72.0,  // gearRatio
+    360.0 / (1440 * (72.0/8.0)), // degreesPerTick (derived from: encoderResolution=1440, gearRatio=72.0/8.0)
     180, // maxAngle
-    75   // minAngle
+    75,  // minAngle
+    false // reverseEncoder
 );
+
+unsigned long lastUpdate = 0;
+unsigned long lastPrint = 0;
 
 void setup() {
     Serial.begin(115200);
@@ -62,20 +65,22 @@ void setup() {
     shoulderMotor.init();
     elbowMotor.init();
     baseMotor.home();
-    baseMotor.setSetpointDegrees(180);
+    shoulderMotor.home();
+    elbowMotor.home();
 }
 
 void loop() {
-    baseMotor.update();
-    //shoulderMotor.update();
-    //elbowMotor.update();
+    if (millis() - lastUpdate > SAMPLE_TIME) {
+        baseMotor.update();
+        shoulderMotor.update();
+        elbowMotor.update();
+        lastUpdate = millis();
+    }
 
-    // Print less frequently to avoid flooding the Serial monitor
-    static unsigned long lastPrint = 0;
-    if (millis() - lastPrint > 100) {
+    if (millis() - lastPrint > SERIAL_SAMPLE_TIME) {
+        baseMotor.printDebugInfo("Base Motor");
+        shoulderMotor.printDebugInfo("Shoulder Motor");
+        elbowMotor.printDebugInfo("Elbow Motor");
         lastPrint = millis();
-        baseMotor.printDebugInfo("Base");
-        //shoulderMotor.printDebugInfo("Shoulder");
-        //elbowMotor.printDebugInfo("Elbow");
     }
 }
