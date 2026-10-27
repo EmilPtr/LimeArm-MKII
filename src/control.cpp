@@ -124,3 +124,49 @@ void EncoderJoint::home() {
     input = homedAngle;
     setpoint = homedAngle;
 }
+
+
+WristServo::WristServo(uint8_t pin, int minAngle, int maxAngle, int kinematicsOffset, boolean reversed)
+    : servoPin(pin), minAngle(minAngle), maxAngle(maxAngle), kinematicsOffset(kinematicsOffset), reversed(reversed) {
+    servo.attach(servoPin);
+}
+
+void WristServo::setAngle(int angle) {
+    // Apply kinematics offset and reverse if necessary
+    int adjustedAngle = constrain(angle, minAngle, maxAngle) + kinematicsOffset;
+    if (reversed) {
+        adjustedAngle = maxAngle - (adjustedAngle - minAngle);
+    }
+
+    // Write the adjusted angle to the servo
+    servo.write(adjustedAngle);
+}
+
+ClawDCMotor::ClawDCMotor(uint8_t dir1, uint8_t dir2, uint8_t pwm)
+    : dir1(dir1), dir2(dir2), pwm(pwm) {
+    pinMode(dir1, OUTPUT);
+    pinMode(dir2, OUTPUT);
+    pinMode(pwm, OUTPUT);
+}
+
+void ClawDCMotor::openBlocking() {
+    // Set the motor to open the claw
+    digitalWrite(dir1, HIGH);
+    digitalWrite(dir2, LOW);
+    analogWrite(pwm, 255);
+
+    // Wait for a fixed duration to ensure the claw is fully open
+    delay(MOTOR_OPEN_DURATION);
+
+    // Stop the motor after opening
+    digitalWrite(dir1, LOW);
+    digitalWrite(dir2, LOW);
+    analogWrite(pwm, 0);
+}
+
+void ClawDCMotor::setClose() {
+    // Set the motor to close the claw
+    digitalWrite(dir1, LOW);
+    digitalWrite(dir2, HIGH);
+    analogWrite(pwm, 255);
+}

@@ -29,6 +29,8 @@
 
 #define MOTOR_HOME_SPEED 50
 
+#define MOTOR_OPEN_DURATION 700 // Duration to fully open the claw in milliseconds
+
 // PID constants
 #define KP 2.0 // Proportional gain
 #define KI 0.0 // Integral gain
@@ -72,6 +74,32 @@ private:
     double homedAngle;
     boolean reverseEncoder;
     uint8_t backlashOffset;
+};
+
+class WristServo {
+public:
+    WristServo(uint8_t pin, int minAngle, int maxAngle, int kinematicsOffset, boolean reversed);
+    void setAngle(int angle);
+
+private:
+    uint8_t servoPin;
+    int minAngle;
+    int maxAngle;
+    int kinematicsOffset;
+    boolean reversed;
+    Servo servo;
+};
+
+class ClawDCMotor {
+public:
+    ClawDCMotor(uint8_t dir1, uint8_t dir2, uint8_t pwm);
+    void openBlocking();
+    void setClose();
+
+private:
+    uint8_t dir1;
+    uint8_t dir2;
+    uint8_t pwm;
 };
 
 #endif

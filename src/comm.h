@@ -4,8 +4,8 @@
 #include <Arduino.h>
 
 #define PACKET_SOF 0xFF
-#define PACKET_PAYLOAD_SIZE 6 // 3 joints * 2 bytes (int16_t)
-#define PACKET_TOTAL_SIZE 8   // SOF(1) + PAYLOAD(6) + CHECKSUM(1)
+#define PACKET_PAYLOAD_SIZE 9 // 4 joints * 2 bytes (int16_t) + 1 byte for claw (uint8_t)
+#define PACKET_TOTAL_SIZE 11   // SOF(1) + PAYLOAD(9) + CHECKSUM(1)
 
 // Scale factor for float <-> int16_t conversion (e.g. 270.0 degrees -> 2700)
 #define ANGLE_SCALE_FACTOR 100.0f
@@ -20,6 +20,8 @@ struct JointAngles {
     double base;
     double shoulder;
     double elbow;
+    double wrist;
+    uint8_t claw; // 0 = stop, 1 = open, 2 = close
 };
 
 class SerialComm {
@@ -30,7 +32,7 @@ public:
     bool processRX(JointAngles& outSetpoints);
 
     // Call this at the desired telemetry interval
-    void sendTX(double baseAngle, double shoulderAngle, double elbowAngle);
+    void sendTX(double baseAngle, double shoulderAngle, double elbowAngle, double wristAngle, uint8_t clawState);
 
 private:
     ParserState rxState;
