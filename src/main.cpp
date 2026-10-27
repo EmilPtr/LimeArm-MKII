@@ -60,7 +60,7 @@ EncoderJoint elbowMotor(
     15 // backlashOffset
 );
 
-WristServo wristServo(3, 90, 270, 90, true);
+WristServo wristServo(A3, 90, 270, -90, true);
 ClawDCMotor clawMotor(33, 32, 11);
 
 unsigned long lastUpdate = 0;
