@@ -60,6 +60,9 @@ EncoderJoint elbowMotor(
     15 // backlashOffset
 );
 
+WristServo wristServo(A9, 90, 270, -90, false);
+ClawDCMotor clawMotor(32, 33, 11);
+
 unsigned long lastUpdate = 0;
 unsigned long lastPrint = 0;
 
@@ -74,6 +77,9 @@ void setup() {
     baseMotor.home();
     shoulderMotor.home();
     elbowMotor.home();
+    wristServo.attach();
+    clawMotor.init();
+    clawMotor.setClose(); // Start with the claw closed
 }
 
 void loop() {
@@ -83,6 +89,14 @@ void loop() {
         baseMotor.setSetpointDegrees(targetSetpoints.base);
         shoulderMotor.setSetpointDegrees(targetSetpoints.shoulder);
         elbowMotor.setSetpointDegrees(targetSetpoints.elbow);
+        wristServo.setAngle(targetSetpoints.wrist);
+        
+        if (targetSetpoints.claw == 1) {
+            clawMotor.setOpen();
+        } else if (targetSetpoints.claw == 2) {
+            clawMotor.setClose();
+        }
+        // If claw == 0, we do nothing and maintain current state
     }
 
     // 2. Update PID controllers at a fixed interval
@@ -99,7 +113,9 @@ void loop() {
         comm.sendTX(
             baseMotor.getCurrentAngle(),
             shoulderMotor.getCurrentAngle(),
-            elbowMotor.getCurrentAngle()
+            elbowMotor.getCurrentAngle(),
+            targetSetpoints.wrist,
+            targetSetpoints.claw
         );
         lastPrint = millis();
     }
