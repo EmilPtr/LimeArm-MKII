@@ -127,8 +127,10 @@ void EncoderJoint::home() {
 
 
 WristServo::WristServo(uint8_t pin, int minAngle, int maxAngle, int kinematicsOffset, boolean reversed)
-    : servoPin(pin), minAngle(minAngle), maxAngle(maxAngle), kinematicsOffset(kinematicsOffset), reversed(reversed) {
-    servo.attach(servoPin);
+    : servoPin(pin), minAngle(minAngle), maxAngle(maxAngle), kinematicsOffset(kinematicsOffset), reversed(reversed){}
+
+void WristServo::attach() {
+    servo.attach(servoPin, WRIST_SERVO_MIN, WRIST_SERVO_MAX);
 }
 
 void WristServo::setAngle(int angle) {
@@ -139,7 +141,11 @@ void WristServo::setAngle(int angle) {
     }
 
     // Write the adjusted angle to the servo
-    servo.write(adjustedAngle);
+    servo.write(adjustedAngle + WRIST_SERVO_OFFSET);
+}
+
+int WristServo::getWristServoAngle() {
+    return servo.read();
 }
 
 ClawDCMotor::ClawDCMotor(uint8_t dir1, uint8_t dir2, uint8_t pwm)

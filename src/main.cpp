@@ -60,7 +60,7 @@ EncoderJoint elbowMotor(
     15 // backlashOffset
 );
 
-WristServo wristServo(A3, 90, 270, -90, true);
+WristServo wristServo(A9, 90, 270, -90, false);
 ClawDCMotor clawMotor(33, 32, 11);
 
 unsigned long lastUpdate = 0;
@@ -77,6 +77,7 @@ void setup() {
     baseMotor.home();
     shoulderMotor.home();
     elbowMotor.home();
+    wristServo.attach();
 }
 
 void loop() {
@@ -111,7 +112,7 @@ void loop() {
             baseMotor.getCurrentAngle(),
             shoulderMotor.getCurrentAngle(),
             elbowMotor.getCurrentAngle(),
-            targetSetpoints.wrist, // we don't have current angle sensor for wrist/claw so we echo setpoints
+            targetSetpoints.wrist,
             targetSetpoints.claw
         );
         lastPrint = millis();

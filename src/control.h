@@ -23,6 +23,9 @@
 #define ELBOW_ENCODER_PIN_B 13
 
 #define WRIST_SERVO_PIN 3
+#define WRIST_SERVO_OFFSET -5
+#define WRIST_SERVO_MIN 833
+#define WRIST_SERVO_MAX 2167
 
 #define MOTOR_MAX_SPEED 150
 #define MOTOR_MIN_SPEED -150
@@ -80,7 +83,8 @@ class WristServo {
 public:
     WristServo(uint8_t pin, int minAngle, int maxAngle, int kinematicsOffset, boolean reversed);
     void setAngle(int angle);
-
+    void attach();
+    int getWristServoAngle();
 private:
     uint8_t servoPin;
     int minAngle;
