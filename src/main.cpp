@@ -79,7 +79,6 @@ void setup() {
     elbowMotor.home();
     wristServo.attach();
     clawMotor.init();
-    clawMotor.setClose(); // Start with the claw closed
 }
 
 void loop() {
