@@ -149,20 +149,22 @@ int WristServo::getWristServoAngle() {
 }
 
 ClawDCMotor::ClawDCMotor(uint8_t dir1, uint8_t dir2, uint8_t pwm)
-    : dir1(dir1), dir2(dir2), pwm(pwm) {
+    : dir1(dir1), dir2(dir2), pwm(pwm) {}
+
+void ClawDCMotor::init() {
     pinMode(dir1, OUTPUT);
     pinMode(dir2, OUTPUT);
     pinMode(pwm, OUTPUT);
 }
 
-void ClawDCMotor::openBlocking() {
+void ClawDCMotor::setOpen() {
     // Set the motor to open the claw
     digitalWrite(dir1, HIGH);
     digitalWrite(dir2, LOW);
     analogWrite(pwm, 255);
 
     // Wait for a fixed duration to ensure the claw is fully open
-    delay(MOTOR_OPEN_DURATION);
+    delay(CLAW_MOTOR_DURATION);
 
     // Stop the motor after opening
     digitalWrite(dir1, LOW);
@@ -175,4 +177,12 @@ void ClawDCMotor::setClose() {
     digitalWrite(dir1, LOW);
     digitalWrite(dir2, HIGH);
     analogWrite(pwm, 255);
+
+    // Wait for a fixed duration to ensure the claw is fully closed
+    delay(CLAW_MOTOR_DURATION);
+
+    // Stop the motor after closing
+    digitalWrite(dir1, LOW);
+    digitalWrite(dir2, LOW);
+    analogWrite(pwm, 0);
 }

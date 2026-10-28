@@ -32,7 +32,7 @@
 
 #define MOTOR_HOME_SPEED 50
 
-#define MOTOR_OPEN_DURATION 700 // Duration to fully open the claw in milliseconds
+#define CLAW_MOTOR_DURATION 700 // Duration to fully open the claw in milliseconds
 
 // PID constants
 #define KP 2.0 // Proportional gain
@@ -97,8 +97,9 @@ private:
 class ClawDCMotor {
 public:
     ClawDCMotor(uint8_t dir1, uint8_t dir2, uint8_t pwm);
-    void openBlocking();
+    void setOpen();
     void setClose();
+    void init();
 
 private:
     uint8_t dir1;

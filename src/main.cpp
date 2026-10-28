@@ -61,7 +61,7 @@ EncoderJoint elbowMotor(
 );
 
 WristServo wristServo(A9, 90, 270, -90, false);
-ClawDCMotor clawMotor(33, 32, 11);
+ClawDCMotor clawMotor(32, 33, 11);
 
 unsigned long lastUpdate = 0;
 unsigned long lastPrint = 0;
@@ -78,6 +78,8 @@ void setup() {
     shoulderMotor.home();
     elbowMotor.home();
     wristServo.attach();
+    clawMotor.init();
+    clawMotor.setClose(); // Start with the claw closed
 }
 
 void loop() {
@@ -90,7 +92,7 @@ void loop() {
         wristServo.setAngle(targetSetpoints.wrist);
         
         if (targetSetpoints.claw == 1) {
-            clawMotor.openBlocking();
+            clawMotor.setOpen();
         } else if (targetSetpoints.claw == 2) {
             clawMotor.setClose();
         }
