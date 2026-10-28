@@ -23,11 +23,16 @@
 #define ELBOW_ENCODER_PIN_B 13
 
 #define WRIST_SERVO_PIN 3
+#define WRIST_SERVO_OFFSET -5
+#define WRIST_SERVO_MIN 833
+#define WRIST_SERVO_MAX 2167
 
 #define MOTOR_MAX_SPEED 150
 #define MOTOR_MIN_SPEED -150
 
 #define MOTOR_HOME_SPEED 50
+
+#define CLAW_MOTOR_DURATION 700 // Duration to fully open the claw in milliseconds
 
 // PID constants
 #define KP 2.0 // Proportional gain
@@ -72,6 +77,34 @@ private:
     double homedAngle;
     boolean reverseEncoder;
     uint8_t backlashOffset;
+};
+
+class WristServo {
+public:
+    WristServo(uint8_t pin, int minAngle, int maxAngle, int kinematicsOffset, boolean reversed);
+    void setAngle(int angle);
+    void attach();
+    int getWristServoAngle();
+private:
+    uint8_t servoPin;
+    int minAngle;
+    int maxAngle;
+    int kinematicsOffset;
+    boolean reversed;
+    Servo servo;
+};
+
+class ClawDCMotor {
+public:
+    ClawDCMotor(uint8_t dir1, uint8_t dir2, uint8_t pwm);
+    void setOpen();
+    void setClose();
+    void init();
+
+private:
+    uint8_t dir1;
+    uint8_t dir2;
+    uint8_t pwm;
 };
 
 #endif

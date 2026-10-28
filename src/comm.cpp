@@ -42,11 +42,15 @@ bool SerialComm::processRX(JointAngles& outSetpoints) {
                     int16_t baseRaw = payloadBuffer[0] | (payloadBuffer[1] << 8);
                     int16_t shoulderRaw = payloadBuffer[2] | (payloadBuffer[3] << 8);
                     int16_t elbowRaw = payloadBuffer[4] | (payloadBuffer[5] << 8);
+                    int16_t wristRaw = payloadBuffer[6] | (payloadBuffer[7] << 8);
+                    uint8_t clawRaw = payloadBuffer[8];
 
                     // Output the parsed setpoints
                     outSetpoints.base = (double)baseRaw / ANGLE_SCALE_FACTOR;
                     outSetpoints.shoulder = (double)shoulderRaw / ANGLE_SCALE_FACTOR;
                     outSetpoints.elbow = (double)elbowRaw / ANGLE_SCALE_FACTOR;
+                    outSetpoints.wrist = (double)wristRaw / ANGLE_SCALE_FACTOR;
+                    outSetpoints.claw = clawRaw;
                     packetReceived = true;
                 }
                 // Always reset state machine after checking (or on fail)
@@ -57,7 +61,7 @@ bool SerialComm::processRX(JointAngles& outSetpoints) {
     return packetReceived;
 }
 
-void SerialComm::sendTX(double baseAngle, double shoulderAngle, double elbowAngle) {
+void SerialComm::sendTX(double baseAngle, double shoulderAngle, double elbowAngle, double wristAngle, uint8_t clawState) {
     // Prepare packet buffer
     uint8_t packet[PACKET_TOTAL_SIZE];
     
@@ -68,6 +72,7 @@ void SerialComm::sendTX(double baseAngle, double shoulderAngle, double elbowAngl
     int16_t baseRaw = (int16_t)(baseAngle * ANGLE_SCALE_FACTOR);
     int16_t shoulderRaw = (int16_t)(shoulderAngle * ANGLE_SCALE_FACTOR);
     int16_t elbowRaw = (int16_t)(elbowAngle * ANGLE_SCALE_FACTOR);
+    int16_t wristRaw = (int16_t)(wristAngle * ANGLE_SCALE_FACTOR);
 
     // Serialize as Little Endian
     packet[1] = baseRaw & 0xFF;
@@ -76,9 +81,12 @@ void SerialComm::sendTX(double baseAngle, double shoulderAngle, double elbowAngl
     packet[4] = (shoulderRaw >> 8) & 0xFF;
     packet[5] = elbowRaw & 0xFF;
     packet[6] = (elbowRaw >> 8) & 0xFF;
+    packet[7] = wristRaw & 0xFF;
+    packet[8] = (wristRaw >> 8) & 0xFF;
+    packet[9] = clawState;
 
     // 3. Calculate Checksum
-    packet[7] = calculateChecksum(&packet[1], PACKET_PAYLOAD_SIZE);
+    packet[10] = calculateChecksum(&packet[1], PACKET_PAYLOAD_SIZE);
 
     // Transmit binary packet as a single block for low overhead
     Serial.write(packet, PACKET_TOTAL_SIZE);
