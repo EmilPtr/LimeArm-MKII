@@ -47,7 +47,6 @@ void EncoderJoint::init() {
 }
 
 void EncoderJoint::setSetpointDegrees(double angle) {
-    angle += backlashOffset; // Apply backlash offset to the desired angle
     if (angle > maxAngle) {
         setpoint = maxAngle;
     } else if (angle < minAngle) {
@@ -110,8 +109,11 @@ void EncoderJoint::home() {
     // Immediately stop the motor upon triggering the switch
     moveMotor(0);
 
-    // Calculate the raw encoder ticks that correspond to the predetermined homed angle
-    long homedTicks = (long)(homedAngle / degreesPerTick);
+    // Seed the encoder with the homed angle minus the backlash offset, so it
+    // deliberately starts reporting a value that is `backlashOffset` degrees
+    // short of the true position (the joint sits in the droop/slack state).
+    double seededAngle = homedAngle - backlashOffset;
+    long homedTicks = (long)(seededAngle / degreesPerTick);
 
     // Overwrite the encoder's internal counter to establish our absolute zero/homed reference
     if (reverseEncoder) {
@@ -121,8 +123,8 @@ void EncoderJoint::home() {
     }
 
     // Update internal PID states to reflect the new homed position so the joint doesn't jump
-    input = homedAngle;
-    setpoint = homedAngle;
+    input = seededAngle;
+    setpoint = seededAngle;
 }
 
 
