@@ -15,7 +15,9 @@ EncoderJoint::EncoderJoint(
     double maxAngle, 
     double minAngle,
     boolean reverseEncoder,
-    uint8_t backlashOffset):
+    uint8_t backlashOffset,
+    double backlashSlope,
+    double backlashRefAngle):
 
     dir1(dir1),
     dir2(dir2),
@@ -31,7 +33,9 @@ EncoderJoint::EncoderJoint(
     minAngle(minAngle),
     homedAngle(homedAngle),
     reverseEncoder(reverseEncoder),
-    backlashOffset(backlashOffset)
+    backlashOffset(backlashOffset),
+    backlashSlope(backlashSlope),
+    backlashRefAngle(backlashRefAngle)
 {
     // Initialize the PID controller automatically upon instantiation
     pid.SetMode(AUTOMATIC);
@@ -47,6 +51,9 @@ void EncoderJoint::init() {
 }
 
 void EncoderJoint::setSetpointDegrees(double angle) {
+    // Offset is linear in the desired angle: backlashOffset at backlashRefAngle,
+    // changing by backlashSlope degrees per degree away from it.
+    angle += backlashOffset + backlashSlope * (angle - backlashRefAngle);
     if (angle > maxAngle) {
         setpoint = maxAngle;
     } else if (angle < minAngle) {
@@ -62,6 +69,11 @@ double EncoderJoint::getCurrentAngle() {
         encoderValue = -encoderValue;
     }
     return encoderValue * degreesPerTick;
+}
+
+double EncoderJoint::getReportedAngle() {
+    // Invert: encoder = angle + backlashOffset + backlashSlope * (angle - backlashRefAngle)
+    return (getCurrentAngle() - backlashOffset + backlashSlope * backlashRefAngle) / (1.0 + backlashSlope);
 }
 
 void EncoderJoint::moveMotor(int speed) {
@@ -109,11 +121,8 @@ void EncoderJoint::home() {
     // Immediately stop the motor upon triggering the switch
     moveMotor(0);
 
-    // Seed the encoder with the homed angle minus the backlash offset, so it
-    // deliberately starts reporting a value that is `backlashOffset` degrees
-    // short of the true position (the joint sits in the droop/slack state).
-    double seededAngle = homedAngle - backlashOffset;
-    long homedTicks = (long)(seededAngle / degreesPerTick);
+    // Calculate the raw encoder ticks that correspond to the predetermined homed angle
+    long homedTicks = (long)(homedAngle / degreesPerTick);
 
     // Overwrite the encoder's internal counter to establish our absolute zero/homed reference
     if (reverseEncoder) {
@@ -123,8 +132,8 @@ void EncoderJoint::home() {
     }
 
     // Update internal PID states to reflect the new homed position so the joint doesn't jump
-    input = seededAngle;
-    setpoint = seededAngle;
+    input = homedAngle;
+    setpoint = homedAngle;
 }
 
 

@@ -57,7 +57,9 @@ EncoderJoint elbowMotor(
     180, // maxAngle
     75,  // minAngle
     false, // reverseEncoder
-    15 // backlashOffset
+    22, // backlashOffset (at 90 deg)
+    -3 / 45.0, // backlashSlope: offset falls 3 deg per 45 deg (22 at 90 deg, 19 at 135 deg)
+    90 // backlashRefAngle
 );
 
 WristServo wristServo(A9, 90, 270, -90, false);
@@ -120,9 +122,9 @@ void loop() {
     if (millis() - lastPrint > SERIAL_SAMPLE_TIME) {
         // Fetch current angles and send them
         comm.sendTX(
-            baseMotor.getCurrentAngle(),
-            shoulderMotor.getCurrentAngle(),
-            elbowMotor.getCurrentAngle(),
+            baseMotor.getReportedAngle(),
+            shoulderMotor.getReportedAngle(),
+            elbowMotor.getReportedAngle(),
             targetSetpoints.wrist,
             targetSetpoints.claw
         );
