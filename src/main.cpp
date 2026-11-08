@@ -79,6 +79,16 @@ void setup() {
     elbowMotor.home();
     wristServo.attach();
     clawMotor.init();
+
+    // Initial pose after homing
+    targetSetpoints.base = 270;
+    targetSetpoints.shoulder = 90;
+    targetSetpoints.elbow = 90;
+    targetSetpoints.wrist = 180;
+    baseMotor.setSetpointDegrees(targetSetpoints.base);
+    shoulderMotor.setSetpointDegrees(targetSetpoints.shoulder);
+    elbowMotor.setSetpointDegrees(targetSetpoints.elbow);
+    wristServo.setAngle(targetSetpoints.wrist);
 }
 
 void loop() {
