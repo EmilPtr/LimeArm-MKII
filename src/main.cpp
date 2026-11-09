@@ -57,8 +57,8 @@ EncoderJoint elbowMotor(
     180, // maxAngle
     75,  // minAngle
     false, // reverseEncoder
-    22, // backlashOffset (at 90 deg)
-    -3 / 45.0, // backlashSlope: offset falls 3 deg per 45 deg (22 at 90 deg, 19 at 135 deg)
+    15, // backlashOffset (at 90 deg)
+    -10.0 / 45.0, // backlashSlope: offset falls from 15 at 90 deg to 5 at 135 deg
     90 // backlashRefAngle
 );
 
