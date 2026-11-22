@@ -57,7 +57,9 @@ EncoderJoint elbowMotor(
     180, // maxAngle
     75,  // minAngle
     false, // reverseEncoder
-    15 // backlashOffset
+    15, // backlashOffset (at 90 deg)
+    -10.0 / 45.0, // backlashSlope: offset falls from 15 at 90 deg to 5 at 135 deg
+    90 // backlashRefAngle
 );
 
 WristServo wristServo(A9, 90, 270, -90, false);
@@ -79,6 +81,16 @@ void setup() {
     elbowMotor.home();
     wristServo.attach();
     clawMotor.init();
+
+    // Initial pose after homing
+    targetSetpoints.base = 270;
+    targetSetpoints.shoulder = 90;
+    targetSetpoints.elbow = 90;
+    targetSetpoints.wrist = 180;
+    baseMotor.setSetpointDegrees(targetSetpoints.base);
+    shoulderMotor.setSetpointDegrees(targetSetpoints.shoulder);
+    elbowMotor.setSetpointDegrees(targetSetpoints.elbow);
+    wristServo.setAngle(targetSetpoints.wrist);
 }
 
 void loop() {
@@ -110,9 +122,9 @@ void loop() {
     if (millis() - lastPrint > SERIAL_SAMPLE_TIME) {
         // Fetch current angles and send them
         comm.sendTX(
-            baseMotor.getCurrentAngle(),
-            shoulderMotor.getCurrentAngle(),
-            elbowMotor.getCurrentAngle(),
+            baseMotor.getReportedAngle(),
+            shoulderMotor.getReportedAngle(),
+            elbowMotor.getReportedAngle(),
             targetSetpoints.wrist,
             targetSetpoints.claw
         );

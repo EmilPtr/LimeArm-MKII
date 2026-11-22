@@ -51,11 +51,13 @@ public:
     EncoderJoint(
         uint8_t dir1, uint8_t dir2, uint8_t pwm, uint8_t encA, uint8_t encB, uint8_t limSw,
         double kp, double ki, double kd, double homedAngle, double degreesPerTick, 
-        double maxAngle, double minAngle, boolean reverseEncoder, uint8_t backlashOffset);
+        double maxAngle, double minAngle, boolean reverseEncoder, uint8_t backlashOffset,
+        double backlashSlope = 0, double backlashRefAngle = 0);
 
     void init();
     void setSetpointDegrees(double angle);
     double getCurrentAngle();
+    double getReportedAngle(); // current angle with the backlash offset removed (for telemetry)
     void moveMotor(int speed);
     void update();
     void printDebugInfo(const char* label);
@@ -77,6 +79,8 @@ private:
     double homedAngle;
     boolean reverseEncoder;
     uint8_t backlashOffset;
+    double backlashSlope;    // extra offset per degree away from backlashRefAngle
+    double backlashRefAngle; // angle at which the offset equals backlashOffset
 };
 
 class WristServo {

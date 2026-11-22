@@ -15,7 +15,9 @@ EncoderJoint::EncoderJoint(
     double maxAngle, 
     double minAngle,
     boolean reverseEncoder,
-    uint8_t backlashOffset):
+    uint8_t backlashOffset,
+    double backlashSlope,
+    double backlashRefAngle):
 
     dir1(dir1),
     dir2(dir2),
@@ -31,7 +33,9 @@ EncoderJoint::EncoderJoint(
     minAngle(minAngle),
     homedAngle(homedAngle),
     reverseEncoder(reverseEncoder),
-    backlashOffset(backlashOffset)
+    backlashOffset(backlashOffset),
+    backlashSlope(backlashSlope),
+    backlashRefAngle(backlashRefAngle)
 {
     // Initialize the PID controller automatically upon instantiation
     pid.SetMode(AUTOMATIC);
@@ -47,7 +51,9 @@ void EncoderJoint::init() {
 }
 
 void EncoderJoint::setSetpointDegrees(double angle) {
-    angle += backlashOffset; // Apply backlash offset to the desired angle
+    // Offset is linear in the desired angle: backlashOffset at backlashRefAngle,
+    // changing by backlashSlope degrees per degree away from it.
+    angle += backlashOffset + backlashSlope * (angle - backlashRefAngle);
     if (angle > maxAngle) {
         setpoint = maxAngle;
     } else if (angle < minAngle) {
@@ -63,6 +69,11 @@ double EncoderJoint::getCurrentAngle() {
         encoderValue = -encoderValue;
     }
     return encoderValue * degreesPerTick;
+}
+
+double EncoderJoint::getReportedAngle() {
+    // Invert: encoder = angle + backlashOffset + backlashSlope * (angle - backlashRefAngle)
+    return (getCurrentAngle() - backlashOffset + backlashSlope * backlashRefAngle) / (1.0 + backlashSlope);
 }
 
 void EncoderJoint::moveMotor(int speed) {
