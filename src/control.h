@@ -32,7 +32,7 @@
 
 #define MOTOR_HOME_SPEED 50
 
-#define CLAW_MOTOR_DURATION 700 // Duration to fully open the claw in milliseconds
+#define CLAW_MOTOR_DURATION 1000 // Duration to fully open the claw in milliseconds
 
 // PID constants
 #define KP 2.0 // Proportional gain
